@@ -48,7 +48,7 @@ def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
         bundle = definitions[name]
         filtered = {}
 
-        files = bundle["files"] + definitions.get_dependencies_files(bundle["dependencies"])
+        files = definitions.get_dependencies_files(bundle["dependencies"]) + bundle["files"]
 
         # if filter_file is not included, skip this bundle
         if filter_file is not None and filter_file not in files:

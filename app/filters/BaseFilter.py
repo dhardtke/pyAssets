@@ -7,6 +7,7 @@ class BaseFilter:
         self.input_extensions = []  # the extensions this filter is responsible for (i.e. js, or css, etc.)
 
     def apply(self, file_contents, filename):
+        # TODO implement check to check for cleancss, somewhere in BaseFilter
         raise NotImplementedError
 
     @staticmethod

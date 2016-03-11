@@ -12,8 +12,6 @@ class CleanCssFilter(BaseFilter):
 
     def apply(self, file_contents, filename):
         # print("[CleanCss] Filtering %s\n" % filename)
-
-        # TODO implement check to check for cleancss, somewhere in BaseFilter
         process = subprocess.run(["cleancss", "--s0", "--skip-rebase"], input=file_contents, env=os.environ, shell=True,
                                  stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
