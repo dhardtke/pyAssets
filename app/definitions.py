@@ -13,7 +13,7 @@ class Definitions:
     def __getitem__(self, item):
         return self.data.__getitem__(item)
 
-    def add(self, name, files=None, dependencies=None, is_internal=False):
+    def add(self, name, files=None, dependencies=None, is_internal=False, check_validity=True):
         """
         add a new definition
         :param name: name of the definition
@@ -35,8 +35,9 @@ class Definitions:
             "is_internal": is_internal
         }
 
-        # check validity of this definition
-        self._check_validity(name)
+        if check_validity:
+            # check validity of this definition
+            self._check_validity(name)
 
     def clear(self):
         """
@@ -73,16 +74,19 @@ class Definitions:
         if "internals" in bundles:
             for bundle in bundles["internals"]:
                 b = bundles["internals"][bundle]
-                self.add(bundle, b["files"] if "files" in b else [],
-                         b["dependencies"] if "dependencies" in b else [],
-                         True)
+                self.add(bundle, b["files"] if "files" in b else [], b["dependencies"] if "dependencies" in b else [],
+                         is_internal=True, check_validity=False)
 
             del bundles["internals"]
 
         for bundle in bundles:
             b = bundles[bundle]
-            self.add(bundle, b["files"] if "files" in b else [],
-                     b["dependencies"] if "dependencies" in b else [])
+            self.add(bundle, b["files"] if "files" in b else [], b["dependencies"] if "dependencies" in b else [],
+                     is_internal=False, check_validity=False)
+
+        # check validity later on
+        for name in bundles:
+            self._check_validity(name)
 
     def _check_validity(self, name):
         """
@@ -100,7 +104,7 @@ class Definitions:
         # check dependency correctness
         for dependency in b["dependencies"]:
             if dependency not in self.data:
-                raise KeyError(dependency)
+                raise KeyError("%s not known for definition of %s" % (dependency, name))
 
     def get_dependencies_files(self, dependencies):
         """

@@ -5,7 +5,7 @@ from mock import patch
 from app.definitions import Definitions
 
 
-class TestApp(TestCase):
+class TestDefinitions(TestCase):
     def setUp(self):
         # create a basic Definitions object
         self.definitions = Definitions()

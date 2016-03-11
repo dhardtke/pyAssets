@@ -1,16 +1,32 @@
-import datetime
+import codecs
+import os
 
 from tqdm import tqdm
 
 from app.definitions import Definitions
+from app.filters.BaseFilter import BaseFilter
+from app.filters.CleanCssFilter import CleanCssFilter
+from app.filters.ScssFilter import ScssFilter
+from app.filters.UglifyJsFilter import UglifyJsFilter
+from app.helpers import get_header, get_extension_from_filename
 
 
-def get_header():
-    now = datetime.datetime.now()
-    return "/* Compiled %s */" % (now.strftime("%a %b %d %Y %H:%M:%S"))
+def get_filters_for_file(filename):
+    # TODO read from config file or cmd arguments which filters are enabled
+    # TODO ordereddict to add Base64Filter
+    available_filters = [ScssFilter(), CleanCssFilter(), UglifyJsFilter()]
+    # available_filters = [CleanCssFilter(), ScssFilter()]
+    # available_filters = [ScssFilter(), CleanCssFilter()]
+    filters = []
+    for f in available_filters:
+        if get_extension_from_filename(filename) in f.input_extensions:
+            filters.append(f)
+
+    return filters
 
 
-def run(def_file, output_dir, working_dir, debug=False):
+def run(def_file, output_dir, working_dir, debug=False, verbose=False):
+    # TODO handle verbose parameter and show information about each file currently processing when enabled
     definitions = Definitions()
     definitions.load_from_file(def_file, working_dir)
 
@@ -19,20 +35,44 @@ def run(def_file, output_dir, working_dir, debug=False):
 
     for name in tqdm(definitions, mininterval=0, miniters=0):
         bundle = definitions[name]
+        filtered = {}
 
         files = bundle["files"] + definitions.get_dependencies_files(bundle["dependencies"])
 
         # apply filters
-        for f in []:  # TODO filters list
-            # only apply filter if not in debug mode or this filter should be enforced (like with scss for instance)
-            if not debug or f.enforce:
-                # TODO
-                # TODO get list of file extensions responsible for
-                f.apply()
+        for filename in files:
+            filters = get_filters_for_file(filename)
+            output_extension = BaseFilter.get_output_extension(filename)
 
-                # bundles flagged as internal will not be written to a file
-                # if not bundle["is_internal"]:
-                # output_file = output_dir + os.path.sep + name + "." + group[0]
-                # header = get_header()
-                # with open(output_file, "w") as f:
-                #    f.write(header + "\n" + result)
+            if output_extension not in filtered:
+                filtered[output_extension] = ""
+
+            if filename not in cache:
+                if verbose:
+                    print("Applying filters %s for %s, detected output extension: %s" % (filters, filename, output_extension))
+
+                for f in filters:
+                    # only apply filter if not in debug mode
+                    # or this filter should be enforced (like with scss for instance)
+                    if not debug or f.enforce:
+                        with open(filename, "rb") as file_handle:
+                            tmp = f.apply(file_handle.read(), filename)
+                            cache[filename] = tmp
+
+                            filtered[output_extension] += tmp
+            else:
+                filtered[output_extension] += cache[filename]
+
+        # bundles flagged as internal will not be written to a file
+        if not bundle["is_internal"]:
+            for ext in filtered:
+                output_file = os.path.normpath(output_dir + "/" + name + "." + ext)
+
+                # create directories if necessary
+                dirname = os.path.dirname(os.path.abspath(output_file))
+                if not os.path.exists(dirname):
+                    os.makedirs(dirname)
+
+                header = get_header()
+                with codecs.open(output_file, "w", "utf-8") as file_handle:
+                    file_handle.write(header + "\n" + filtered[ext])
