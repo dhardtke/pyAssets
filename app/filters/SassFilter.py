@@ -1,12 +1,13 @@
 import os
 import shutil
 import subprocess
+import tempfile
 
-from app.filters.CleanCssFilter import CleanCssFilter
+from app.filters.BaseFilter import BaseFilter
 from app.helpers import get_extension_from_filename
 
 
-class ScssFilter(CleanCssFilter):
+class SassFilter(BaseFilter):
     def __init__(self):
         super().__init__()
 
@@ -14,7 +15,7 @@ class ScssFilter(CleanCssFilter):
         self.input_extensions = ["scss", "sass"]
 
     def apply(self, file_contents, filename):
-        # print("[ScssFilter] Filtering %s\n" % filename)
+        # print("[SassFilter] Filtering %s\n" % filename)
 
         # use sassc when available
         if shutil.which("sassc") is not None:
@@ -22,7 +23,8 @@ class ScssFilter(CleanCssFilter):
         else:
             binary = "sass"
 
-        args = [binary, "--load-path", os.path.dirname(os.path.abspath(filename))]
+        args = [binary, "--load-path", os.path.dirname(os.path.abspath(filename)), "--cache-location",
+                os.path.join(tempfile.gettempdir(), "sass-cache")]
 
         # only append "--scss" when using sass as compiler
         ext = get_extension_from_filename(filename)
@@ -39,8 +41,4 @@ class ScssFilter(CleanCssFilter):
             raise ChildProcessError(
                 "%s exited with error code %d, last lines of output:\n%s" % (binary, process.returncode, last_lines))
 
-        # filtered = process.stdout
-
-        # run CleanCssFilter over the processed scss output
-        # return super(ScssFilter, self).apply(filtered, filename)
         return process.stdout.decode("utf8")

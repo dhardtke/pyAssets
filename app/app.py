@@ -7,7 +7,7 @@ from app.definitions import Definitions
 from app.filters.Base64Filter import Base64Filter
 from app.filters.BaseFilter import BaseFilter
 from app.filters.CleanCssFilter import CleanCssFilter
-from app.filters.ScssFilter import ScssFilter
+from app.filters.SassFilter import SassFilter
 from app.filters.UglifyJsFilter import UglifyJsFilter
 from app.helpers import get_header, get_extension_from_filename
 
@@ -18,7 +18,7 @@ VERBOSE = False
 def get_filters_for_file(filename):
     # TODO read from config file or cmd arguments which filters are enabled
     # the order of the filters is very important here
-    available_filters = [ScssFilter(), Base64Filter(), CleanCssFilter(), UglifyJsFilter()]
+    available_filters = [SassFilter(), Base64Filter(), CleanCssFilter(), UglifyJsFilter()]
     filters = []
     ext = get_extension_from_filename(filename)
 
