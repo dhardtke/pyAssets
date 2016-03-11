@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-import sys
+
+import argparse
 
 from app import app
 
-if len(sys.argv) != 2:
-    sys.stdout.write("Usage: run.py myAssetDefinitions.yml\n")
-    sys.stderr.write("Invalid amount of arguments. Exiting now!\n")
-    sys.exit(1)
+parser = argparse.ArgumentParser()
+parser.add_argument("def_file", help="the filename of the definitions file to use")
+parser.add_argument("output_dir", help="the directory where to put the resulting files")
+parser.add_argument("--working-dir", help="from where to start looking for files")
+parser.add_argument("--debug", help="enable debug mode which results in disabled minification and more verbosity")
+# todo optional argument file to filter
+args = parser.parse_args()
 
-app.run(sys.argv[1])
+app.run(def_file=args.def_file, output_dir=args.output_dir, working_dir=args.working_dir, debug=args.debug)
