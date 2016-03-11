@@ -10,21 +10,6 @@ def get_header():
     return "/* Compiled %s */" % (now.strftime("%a %b %d %Y %H:%M:%S"))
 
 
-def get_dependencies_files(definitions, dependencies):
-    files = []
-
-    for name in dependencies:
-        dependency = definitions[name]
-
-        if "files" in dependency:
-            files.extend(dependency["files"])
-
-        if "dependencies" in dependency:
-            files.extend(get_dependencies_files(definitions, dependency["dependencies"]))
-
-    return files
-
-
 def run(def_file, output_dir, working_dir, debug=False):
     definitions = Definitions()
     definitions.load_from_file(def_file, working_dir)
@@ -35,7 +20,7 @@ def run(def_file, output_dir, working_dir, debug=False):
     for name in tqdm(definitions, mininterval=0, miniters=0):
         bundle = definitions[name]
 
-        files = bundle["files"] + get_dependencies_files(definitions, bundle["dependencies"])
+        files = bundle["files"] + definitions.get_dependencies_files(bundle["dependencies"])
 
         # apply filters
         for f in []:  # TODO filters list
