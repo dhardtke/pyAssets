@@ -11,9 +11,9 @@ parser.add_argument("--working-dir", help="from where to start looking for files
 parser.add_argument("--debug", help="enable debug mode which results in disabled minification and more verbosity",
                     action="store_true")
 parser.add_argument("--verbose", help="enforce more verbosity when processing", action="store_true")
+parser.add_argument("--filter", help="when given only process bundles that include this file")
 parser.set_defaults(debug=False)
-# todo optional argument file to filter
 args = parser.parse_args()
 
 app.run(def_file=args.def_file, output_dir=args.output_dir, working_dir=args.working_dir, debug=args.debug,
-        verbose=args.verbose)
+        verbose=args.verbose, filter_file=args.filter)

@@ -25,8 +25,16 @@ def get_filters_for_file(filename):
     return filters
 
 
-def run(def_file, output_dir, working_dir, debug=False, verbose=False):
-    # TODO handle verbose parameter and show information about each file currently processing when enabled
+def run(def_file, output_dir, working_dir, debug=False, verbose=False, filter_file=None):
+    """
+    run the process
+    :param def_file: filename of the definition file
+    :param output_dir: this is where the processed files will be put
+    :param working_dir: this path is used when looking for asset files
+    :param debug: when debug is enabled, minification is disabled
+    :param verbose: print additional information on screen if enabled
+    :param filter_file: if given only process bundles that include this file
+    """
     definitions = Definitions()
     definitions.load_from_file(def_file, working_dir)
 
@@ -38,6 +46,10 @@ def run(def_file, output_dir, working_dir, debug=False, verbose=False):
         filtered = {}
 
         files = bundle["files"] + definitions.get_dependencies_files(bundle["dependencies"])
+
+        # if filter_file is not included, skip this bundle
+        if filter_file is not None and filter_file not in files:
+            continue
 
         # apply filters
         for filename in files:

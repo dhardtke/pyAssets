@@ -23,22 +23,7 @@ def get_mime_type(extension):
 
 def get_header():
     now = datetime.datetime.now()
-    return "/* Compiled %s */" % (now.strftime("%a %b %d %Y %H:%M:%S"))
-
-
-def filter_by_extensions(files, extensions):
-    filtered = []
-
-    for extension in extensions:
-        # prepend dot (".") if necessary
-        if not extension.startswith("."):
-            extension = "." + extension
-
-        for file in files:
-            if file.endswith(extension):
-                filtered.append(file)
-
-    return filtered
+    return "/* Created %s */" % (now.strftime("%a %b %d %Y %H:%M:%S"))
 
 
 def get_extension_from_filename(filename):
