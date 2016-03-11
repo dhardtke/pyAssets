@@ -39,7 +39,8 @@ class ScssFilter(CleanCssFilter):
             raise ChildProcessError(
                 "%s exited with error code %d, last lines of output:\n%s" % (binary, process.returncode, last_lines))
 
-        filtered = process.stdout
+        # filtered = process.stdout
 
         # run CleanCssFilter over the processed scss output
-        return super(ScssFilter, self).apply(filtered, filename)
+        # return super(ScssFilter, self).apply(filtered, filename)
+        return process.stdout.decode("utf8")

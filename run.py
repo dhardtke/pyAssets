@@ -15,5 +15,8 @@ parser.add_argument("--filter", help="when given only process bundles that inclu
 parser.set_defaults(debug=False)
 args = parser.parse_args()
 
+if args.verbose:
+    app.VERBOSE = True
+
 app.run(def_file=args.def_file, output_dir=args.output_dir, working_dir=args.working_dir, debug=args.debug,
-        verbose=args.verbose, filter_file=args.filter)
+        filter_file=args.filter)

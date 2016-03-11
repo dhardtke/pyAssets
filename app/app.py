@@ -4,35 +4,38 @@ import os
 from tqdm import tqdm
 
 from app.definitions import Definitions
+from app.filters.Base64Filter import Base64Filter
 from app.filters.BaseFilter import BaseFilter
 from app.filters.CleanCssFilter import CleanCssFilter
 from app.filters.ScssFilter import ScssFilter
 from app.filters.UglifyJsFilter import UglifyJsFilter
 from app.helpers import get_header, get_extension_from_filename
 
+# print additional information on screen if enabled
+VERBOSE = False
+
 
 def get_filters_for_file(filename):
     # TODO read from config file or cmd arguments which filters are enabled
-    # TODO ordereddict to add Base64Filter
-    available_filters = [ScssFilter(), CleanCssFilter(), UglifyJsFilter()]
-    # available_filters = [CleanCssFilter(), ScssFilter()]
-    # available_filters = [ScssFilter(), CleanCssFilter()]
+    # the order of the filters is very important here
+    available_filters = [ScssFilter(), Base64Filter(), CleanCssFilter(), UglifyJsFilter()]
     filters = []
+    ext = get_extension_from_filename(filename)
+
     for f in available_filters:
-        if get_extension_from_filename(filename) in f.input_extensions:
+        if ext in f.input_extensions:
             filters.append(f)
 
     return filters
 
 
-def run(def_file, output_dir, working_dir, debug=False, verbose=False, filter_file=None):
+def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
     """
     run the process
     :param def_file: filename of the definition file
     :param output_dir: this is where the processed files will be put
     :param working_dir: this path is used when looking for asset files
     :param debug: when debug is enabled, minification is disabled
-    :param verbose: print additional information on screen if enabled
     :param filter_file: if given only process bundles that include this file
     """
     definitions = Definitions()
@@ -60,18 +63,21 @@ def run(def_file, output_dir, working_dir, debug=False, verbose=False, filter_fi
                 filtered[output_extension] = ""
 
             if filename not in cache:
-                if verbose:
-                    print("Applying filters %s for %s, detected output extension: %s" % (filters, filename, output_extension))
+                if VERBOSE:
+                    print("Applying filters %s for %s, detected output extension: %s" % (
+                        filters, filename, output_extension))
+
+                with open(filename, "rb") as file_handle:
+                    tmp = file_handle.read()
 
                 for f in filters:
                     # only apply filter if not in debug mode
                     # or this filter should be enforced (like with scss for instance)
                     if not debug or f.enforce:
-                        with open(filename, "rb") as file_handle:
-                            tmp = f.apply(file_handle.read(), filename)
-                            cache[filename] = tmp
+                        tmp = f.apply(tmp, filename).encode("utf8")
 
-                            filtered[output_extension] += tmp
+                cache[filename] = tmp.decode("utf8")
+                filtered[output_extension] += tmp.decode("utf8")
             else:
                 filtered[output_extension] += cache[filename]
 
