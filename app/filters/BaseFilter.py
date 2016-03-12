@@ -3,7 +3,7 @@ from app.helpers import get_extension_from_filename
 
 class BaseFilter:
     def __init__(self):
-        self.enforce = False  # should this filter be active, regardless of enabled debug mode?
+        self.enforce = False  # should this filter be active, regardless of enabled debug mode or file having been minified already?
         self.input_extensions = []  # the extensions this filter is responsible for (i.e. js, or css, etc.)
 
     def apply(self, file_contents, filename):

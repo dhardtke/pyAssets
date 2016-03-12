@@ -72,9 +72,9 @@ def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
                     tmp = file_handle.read()
 
                 for f in filters:
-                    # only apply filter if not in debug mode
+                    # only apply filter if not in debug mode and not is minified already
                     # or this filter should be enforced (like with scss for instance)
-                    if not debug or f.enforce:
+                    if (not debug and not filename.endswith("min." + output_extension)) or f.enforce:
                         tmp = f.apply(tmp, filename).encode("utf8")
 
                 cache[filename] = tmp.decode("utf8")
