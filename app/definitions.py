@@ -117,10 +117,10 @@ class Definitions:
         for name in dependencies:
             dependency = self.data[name]
 
-            if "files" in dependency:
-                files.extend(dependency["files"])
-
             if "dependencies" in dependency:
                 files.extend(self.get_dependencies_files(dependency["dependencies"]))
+
+            if "files" in dependency:
+                files.extend(dependency["files"])
 
         return files

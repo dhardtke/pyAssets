@@ -50,7 +50,7 @@ def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
         filtered = {}
 
         files = definitions.get_dependencies_files(bundle["dependencies"]) + bundle["files"]
-
+        
         # if filter_file is not included, skip this bundle
         if filter_file is not None and filter_file not in files:
             continue
