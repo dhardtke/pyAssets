@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
 
 from app import app
 
@@ -14,9 +15,15 @@ parser.add_argument("--debug", help="enable debug mode which results in disabled
                     action="store_true", default=False)
 parser.add_argument("--verbose", help="enforce more verbosity when processing", action="store_true")
 parser.add_argument("--filter", help="when given only process bundles that include this file")
-parser.add_argument("--filters-enabled", help="space separated list of enabled filters", default=available_filters,
-                    choices=available_filters)
+parser.add_argument("--filters-enabled", help="comma separated list of enabled filters",
+                    default=",".join(available_filters), type=str)
 args = parser.parse_args()
+
+args.filters_enabled = args.filters_enabled.split(",")
+
+if False in list(map(lambda f: f in available_filters, args.filters_enabled)):
+    sys.stderr.write("Invalid list of enabled filters supplied using --filters-enabled!")
+    sys.exit(1)
 
 if args.verbose:
     app.VERBOSE = True
