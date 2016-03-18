@@ -4,33 +4,14 @@ import os
 from tqdm import tqdm
 
 from app.definitions import Definitions
-from app.filters.Base64Filter import Base64Filter
 from app.filters.BaseFilter import BaseFilter
-from app.filters.CleanCssFilter import CleanCssFilter
-from app.filters.CleanSourceMapFilter import CleanSourceMapFilter
-from app.filters.SassFilter import SassFilter
-from app.filters.UglifyJsFilter import UglifyJsFilter
-from app.helpers import get_header, get_extension_from_filename
+from app.helpers import get_header
 
 # print additional information on screen if enabled
 VERBOSE = False
 
 
-def get_filters_for_file(filename):
-    # TODO read from config file or cmd arguments which filters are enabled
-    # the order of the filters is very important here
-    available_filters = [SassFilter(), Base64Filter(), CleanCssFilter(), UglifyJsFilter(), CleanSourceMapFilter()]
-    filters = []
-    ext = get_extension_from_filename(filename)
-
-    for f in available_filters:
-        if ext in f.input_extensions:
-            filters.append(f)
-
-    return filters
-
-
-def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
+def run(def_file, output_dir, working_dir, debug=False, filter_file=None, filters_enabled=None):
     """
     run the process
     :param def_file: filename of the definition file
@@ -38,6 +19,7 @@ def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
     :param working_dir: this path is used when looking for asset files
     :param debug: when debug is enabled, minification is disabled
     :param filter_file: if given only process bundles that include this file
+    :param filters_enabled: a list of filter names (without Filter suffix) that should be available
     """
     definitions = Definitions()
     definitions.load_from_file(def_file, working_dir)
@@ -50,14 +32,14 @@ def run(def_file, output_dir, working_dir, debug=False, filter_file=None):
         filtered = {}
 
         files = definitions.get_dependencies_files(bundle["dependencies"]) + bundle["files"]
-        
+
         # if filter_file is not included, skip this bundle
         if filter_file is not None and filter_file not in files:
             continue
 
         # apply filters
         for filename in files:
-            filters = get_filters_for_file(filename)
+            filters = BaseFilter.get_filters_for_file(filename, filters_enabled)
             output_extension = BaseFilter.get_output_extension(filename)
 
             if output_extension not in filtered:

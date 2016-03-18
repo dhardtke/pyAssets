@@ -12,7 +12,6 @@ class UglifyJsFilter(BaseFilter):
 
     def apply(self, file_contents, filename):
         # print("[UglifyJS] Filtering %s" % files)
-        # TODO implement check to check for uglifyjs, somewhere in BaseFilter
         process = subprocess.run(["uglifyjs", "-", "-c", "-m", "--screw-ie8", "--no-copyright"], input=file_contents,
                                  env=os.environ, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
